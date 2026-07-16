@@ -1,0 +1,1240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Rent N Ride × AAA · One Platform · A Working Prototype for Sanjay</title>
+<meta name="description" content="A tailored engagement for Sanjay Chhibber / Rent N Ride Motorcycles — Phase 0 refundable pilot, one dashboard for the whole rental business, tailored at every meeting.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a; --bg-2:#141414; --bg-3:#1c1c1c; --bg-4:#242424;
+  --line:#2a2a2a; --line-soft:#1e1e1e;
+  --gold:#E5B94B; --gold-bright:#FFC93C; --gold-deep:#8B6914; --gold-soft:rgba(229,185,75,.12); --gold-glow:rgba(229,185,75,.35);
+  --hazard:#FF6B35; --hazard-bright:#FF8A5B;
+  --off-white:#F5F1E8; --white:#FFFFFF;
+  --body:#C4BFB0; --mute:#8B8578; --mute-soft:#5A5548;
+  --disp:'Bebas Neue',Impact,sans-serif;
+  --sans:'Inter',-apple-system,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--off-white);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--gold);text-decoration:none;font-weight:500}
+a:hover{color:var(--gold-bright)}
+img{max-width:100%;display:block}
+::selection{background:var(--gold);color:#0a0a0a}
+
+/* road stripe divider — the signature moto element */
+.road{height:12px;background:repeating-linear-gradient(90deg,var(--gold) 0 40px,transparent 40px 70px);opacity:.6;margin:0}
+.road.dim{opacity:.25}
+.road.thin{height:6px;background:repeating-linear-gradient(90deg,var(--gold) 0 24px,transparent 24px 40px);opacity:.4}
+
+/* ambient shape */
+.shape{position:fixed;pointer-events:none;z-index:0;border-radius:50%;filter:blur(2px)}
+.shape.a{top:-120px;right:-100px;width:420px;height:420px;background:radial-gradient(circle,var(--gold) 0%,transparent 65%);opacity:.10}
+.shape.b{top:400px;left:-80px;width:260px;height:260px;background:radial-gradient(circle,var(--hazard) 0%,transparent 70%);opacity:.06}
+
+/* ticker */
+.top-strip{background:#050505;border-bottom:1px solid var(--line);height:36px;display:flex;align-items:center;overflow:hidden;position:relative;z-index:10}
+.top-label{padding:0 18px;font-family:var(--mono);font-size:9.5px;letter-spacing:1.8px;color:var(--gold);text-transform:uppercase;font-weight:700;border-right:1px solid var(--line);height:100%;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.top-window{flex:1;overflow:hidden;position:relative;display:flex;align-items:center}
+.top-track{display:inline-block;white-space:nowrap;animation:ticker 100s linear infinite;font-family:var(--mono);font-size:11px;color:var(--body);padding-left:100%;font-weight:400}
+.top-track .n{display:inline-block;margin-right:44px}
+.top-track .src{color:var(--gold-bright);font-weight:700;margin-right:8px;letter-spacing:1px}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+
+/* header */
+header{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+.header-inner{max-width:1200px;margin:0 auto;padding:20px 24px 0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:16px}
+.brand-mark{width:96px;height:52px;background:linear-gradient(135deg,var(--gold),var(--gold-deep));border-radius:6px;display:flex;align-items:center;justify-content:center;gap:6px;color:#0a0a0a;box-shadow:0 6px 18px var(--gold-glow);border:1px solid var(--gold-bright);padding:0 10px;position:relative;overflow:hidden}
+.brand-mark::before{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:repeating-linear-gradient(90deg,#0a0a0a 0 8px,transparent 8px 14px);opacity:.6}
+.brand-mark svg{width:28px;height:20px;flex-shrink:0}
+.brand-mark .rnr{font-family:var(--disp);font-size:22px;font-weight:400;letter-spacing:1.2px;color:#0a0a0a;line-height:1}
+.brand-txt{display:flex;flex-direction:column;line-height:1.1;gap:3px}
+.brand-txt .n{font-family:var(--disp);font-size:22px;font-weight:400;color:var(--off-white);letter-spacing:1.2px}
+.brand-txt .n span{color:var(--gold);margin:0 4px;font-family:var(--sans);font-weight:800;font-size:16px;vertical-align:1px}
+.brand-txt .sub{font-family:var(--mono);font-size:9.5px;letter-spacing:1.4px;color:var(--mute);text-transform:uppercase;font-weight:500}
+.for-tag{font-family:var(--mono);font-size:10px;letter-spacing:1.3px;color:var(--gold);text-transform:uppercase;padding:8px 14px;background:var(--gold-soft);border:1px solid var(--gold-deep);border-radius:4px;font-weight:600}
+.stamp{font-family:var(--mono);font-size:10px;color:var(--mute);letter-spacing:.5px;text-align:right;font-weight:500}
+.stamp b{color:var(--gold);font-weight:700}
+
+/* tabs */
+.tabs{max-width:1200px;margin:0 auto;padding:20px 24px 0;display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:14px 18px;font-family:var(--mono);font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mute);cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;font-weight:600}
+.tab:hover{color:var(--off-white)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);background:linear-gradient(180deg,transparent 60%,var(--gold-soft))}
+.tab .n{color:var(--hazard);margin-right:8px;font-weight:500}
+
+/* main */
+main{max-width:1200px;margin:0 auto;padding:52px 24px 80px;min-height:80vh;position:relative;z-index:1}
+.panel{display:none;animation:fadein .35s ease}
+.panel.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:2.2px;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:14px}
+.eyebrow .dot{color:var(--hazard);margin:0 6px}
+.h1{font-family:var(--disp);font-weight:400;font-size:clamp(44px,7vw,84px);line-height:.95;letter-spacing:1.5px;color:var(--off-white);margin-bottom:22px;text-transform:uppercase}
+.h1 em{font-style:italic;color:var(--gold);font-weight:400}
+.h1 .under{color:var(--gold);border-bottom:3px solid var(--hazard);padding-bottom:2px}
+.h1 .grad{background:linear-gradient(90deg,var(--gold),var(--hazard));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.lead{font-size:17px;line-height:1.65;color:var(--body);max-width:820px;margin-bottom:36px}
+.lead strong{color:var(--off-white);font-weight:600}
+.lead em{color:var(--gold);font-style:italic;font-weight:500}
+.h2{font-family:var(--disp);font-weight:400;font-size:clamp(34px,4.5vw,50px);letter-spacing:1.2px;line-height:1;color:var(--off-white);margin:44px 0 18px;text-transform:uppercase}
+.h2 em{font-style:italic;color:var(--gold);font-weight:400}
+.h3{font-family:var(--disp);font-weight:400;font-size:26px;color:var(--off-white);margin:32px 0 12px;letter-spacing:1px;text-transform:uppercase}
+.p{font-size:15px;line-height:1.68;color:var(--body);margin-bottom:16px;max-width:820px}
+.p strong{color:var(--off-white);font-weight:600}
+.p em{color:var(--gold);font-style:italic;font-weight:500}
+
+/* cards */
+.card{background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border:1px solid var(--line);border-radius:6px;padding:26px 24px;position:relative;overflow:hidden;transition:all .25s}
+.card.gold{border-color:var(--gold-deep);background:linear-gradient(180deg,rgba(229,185,75,.06),var(--bg-2))}
+.card.hazard{border-color:#7a3418;background:linear-gradient(180deg,rgba(255,107,53,.06),var(--bg-2))}
+.card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.card-tag{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.card-tag.h{color:var(--hazard-bright)}
+.card-title{font-family:var(--disp);font-size:26px;font-weight:400;color:var(--off-white);letter-spacing:1px;line-height:1;margin-bottom:12px;text-transform:uppercase}
+.card-title em{font-style:italic;color:var(--gold);font-weight:400}
+.card-body{font-size:14px;color:var(--body);line-height:1.65}
+.card-body strong,.card-body b{color:var(--off-white);font-weight:600}
+.card-body em{color:var(--gold);font-style:italic;font-weight:500}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0}
+@media(max-width:900px){.grid-3,.grid-4,.grid-2{grid-template-columns:1fr}}
+
+/* stat tiles */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:28px 0}
+.stat{background:var(--bg-2);border:1px solid var(--line);border-radius:6px;padding:22px 16px;text-align:center;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold)}
+.stat.hazard::before{background:var(--hazard)}
+.stat .big{font-family:var(--disp);font-size:44px;font-weight:400;color:var(--gold);letter-spacing:1px;line-height:1;margin-bottom:8px}
+.stat.hazard .big{color:var(--hazard-bright)}
+.stat .lbl{font-family:var(--mono);font-size:9.5px;color:var(--body);letter-spacing:.7px;line-height:1.4;text-transform:uppercase;font-weight:600}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+/* said quote block */
+.said{background:var(--bg-2);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 6px 6px 0;padding:20px 24px;margin:16px 0}
+.said .q{font-family:var(--sans);font-style:italic;font-size:17px;color:var(--off-white);line-height:1.5;margin-bottom:10px;font-weight:500}
+.said .q::before{content:'"';color:var(--gold);font-size:32px;line-height:0;margin-right:2px;vertical-align:-10px;font-weight:700;font-family:var(--disp)}
+.said .q::after{content:'"';color:var(--gold);font-size:32px;line-height:0;margin-left:2px;vertical-align:-10px;font-weight:700;font-family:var(--disp)}
+.said .from{font-family:var(--mono);font-size:10px;color:var(--mute);letter-spacing:1.4px;text-transform:uppercase;font-weight:500}
+.said .from b{color:var(--gold);font-weight:700}
+.said.big .q{font-size:20px}
+.means{background:var(--bg-2);border:1px solid var(--gold-deep);border-radius:6px;padding:20px 24px;margin:8px 0 24px;font-size:15px;color:var(--body);line-height:1.65}
+.means b.k{color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;display:block;margin-bottom:8px;font-weight:700}
+.means em{color:var(--gold);font-style:italic;font-weight:500}
+.means strong{color:var(--off-white);font-weight:600}
+
+/* mapping table (Sanjay's ask vs services) */
+.maptbl{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px;background:var(--bg-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.maptbl th,.maptbl td{padding:14px 18px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.maptbl th{font-family:var(--mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);font-weight:700;background:var(--bg-3)}
+.maptbl td.ask{color:var(--off-white);font-weight:500;width:34%}
+.maptbl td.aaa{color:var(--gold);font-family:var(--mono);font-size:13px;width:33%}
+.maptbl td.custom{color:var(--hazard-bright);font-family:var(--mono);font-size:13px;width:33%}
+.maptbl tr.hero td{background:linear-gradient(180deg,rgba(229,185,75,.10),transparent);border-top:2px solid var(--gold);border-bottom:2px solid var(--gold)}
+.maptbl tr.hero td.ask{color:var(--gold-bright);font-weight:700;font-size:15px}
+
+/* bullet lists */
+ul.list{list-style:none;padding:0;margin:14px 0}
+ul.list li{position:relative;padding-left:24px;margin-bottom:10px;color:var(--body);font-size:15px;line-height:1.6}
+ul.list li::before{content:'▸';position:absolute;left:0;top:0;color:var(--gold);font-weight:700;font-size:14px}
+ul.list li b{color:var(--off-white);font-weight:600}
+ul.list li em{color:var(--gold);font-style:italic;font-weight:500}
+ul.list.hazard li::before{color:var(--hazard)}
+
+/* timeline */
+.timeline{border-left:2px solid var(--line);margin:32px 0 32px 12px;padding-left:32px;position:relative}
+.tl-item{margin-bottom:36px;position:relative}
+.tl-item::before{content:'';position:absolute;width:16px;height:16px;background:var(--bg);border:2px solid var(--gold);border-radius:50%;left:-41px;top:5px;box-shadow:0 0 0 4px var(--bg)}
+.tl-item.done::before{background:var(--gold)}
+.tl-item.hero::before{border-color:var(--hazard);background:var(--hazard);box-shadow:0 0 0 4px var(--bg),0 0 16px var(--hazard)}
+.tl-tag{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase;font-weight:700;margin-bottom:6px}
+.tl-item.hero .tl-tag{color:var(--hazard-bright)}
+.tl-h{font-family:var(--disp);font-size:24px;font-weight:400;color:var(--off-white);letter-spacing:.8px;margin-bottom:8px;text-transform:uppercase;line-height:1.05}
+.tl-h em{font-style:italic;font-weight:400;color:var(--gold)}
+.tl-p{font-size:14px;color:var(--body);line-height:1.65;max-width:760px}
+.tl-p b{color:var(--off-white);font-weight:600}
+.tl-p em{color:var(--gold);font-style:italic;font-weight:500}
+
+/* dashboard mockup (Sanjay's "one platform") */
+.dash{background:linear-gradient(180deg,var(--bg-3),var(--bg-2));border:1px solid var(--gold-deep);border-radius:8px;padding:0;margin:24px 0;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.dash-head{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:var(--bg-3)}
+.dash-head .lt{display:flex;align-items:center;gap:14px}
+.dash-head .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.dash-head .t{font-family:var(--disp);font-size:16px;color:var(--off-white);letter-spacing:1px;text-transform:uppercase}
+.dash-head .rt{font-family:var(--mono);font-size:9.5px;color:var(--mute);letter-spacing:1px;text-transform:uppercase}
+.dash-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:1px;background:var(--line)}
+@media(max-width:800px){.dash-grid{grid-template-columns:1fr}}
+.dash-cell{padding:18px 20px;background:var(--bg-2)}
+.dash-cell .k{font-family:var(--mono);font-size:9px;letter-spacing:1.4px;color:var(--mute);text-transform:uppercase;font-weight:600;margin-bottom:6px}
+.dash-cell .v{font-family:var(--disp);font-size:32px;color:var(--gold);letter-spacing:.5px;line-height:1;margin-bottom:6px}
+.dash-cell .v.h{color:var(--hazard-bright)}
+.dash-cell .v.o{color:var(--off-white)}
+.dash-cell .sub{font-size:11px;color:var(--body);line-height:1.4}
+.dash-cell .sub b{color:var(--off-white)}
+.dash-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:12px;color:var(--body)}
+.dash-row:last-child{border:none}
+.dash-row .l{color:var(--off-white);font-weight:500}
+.dash-row .r{color:var(--gold);font-family:var(--mono);font-weight:600}
+.dash-row .r.h{color:var(--hazard-bright)}
+
+/* platform stack row */
+.stack{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:20px 0}
+@media(max-width:800px){.stack{grid-template-columns:repeat(3,1fr)}}
+.stack-item{background:var(--bg-2);border:1px solid var(--line);border-radius:6px;padding:14px 12px;text-align:center;transition:all .2s}
+.stack-item:hover{border-color:var(--gold);background:var(--bg-3)}
+.stack-item .n{font-family:var(--disp);font-size:16px;color:var(--gold);letter-spacing:.5px;line-height:1;margin-bottom:5px;text-transform:uppercase}
+.stack-item .d{font-family:var(--mono);font-size:9px;color:var(--mute);letter-spacing:.6px;text-transform:uppercase;line-height:1.3}
+
+/* math table */
+.mtbl{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px;background:var(--bg-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.mtbl th,.mtbl td{padding:14px 18px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.mtbl th{font-family:var(--mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);font-weight:700;background:var(--bg-3)}
+.mtbl td.row-lbl{color:var(--off-white);font-weight:500}
+.mtbl td.now{color:var(--hazard-bright);font-family:var(--mono);font-weight:600}
+.mtbl td.aaa{color:var(--gold);font-family:var(--mono);font-weight:600}
+.mtbl tr.total td{background:linear-gradient(180deg,rgba(229,185,75,.10),transparent);font-size:15px;padding:18px 18px;border-top:2px solid var(--gold);border-bottom:2px solid var(--gold)}
+.mtbl tr.total td.row-lbl{color:var(--off-white);font-family:var(--disp);letter-spacing:1px;text-transform:uppercase;font-size:16px}
+.mtbl tr.total td.aaa{color:var(--gold-bright);font-size:16px;font-weight:700}
+.mtbl tr.phase0 td{background:rgba(255,107,53,.08)}
+.mtbl tr.phase0 td.aaa{color:var(--hazard-bright);font-weight:700}
+.mtbl tr.save td{background:rgba(229,185,75,.14);color:var(--gold-bright);font-weight:600}
+.mtbl tr.save td.row-lbl{color:var(--gold-bright)}
+
+/* investment hero */
+.invest-hero{background:linear-gradient(135deg,var(--gold-deep),#4a3208);color:var(--off-white);padding:32px 32px;border-radius:8px;margin:28px 0 12px;position:relative;overflow:hidden;border:1px solid var(--gold);box-shadow:0 12px 40px rgba(229,185,75,.15)}
+.invest-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(229,185,75,.30),transparent 70%);border-radius:50%}
+.invest-hero .k{font-family:var(--mono);font-size:10.5px;letter-spacing:1.8px;color:var(--gold-bright);text-transform:uppercase;font-weight:700;margin-bottom:8px;position:relative}
+.invest-hero .num{font-family:var(--disp);font-size:64px;font-weight:400;letter-spacing:2px;line-height:.95;margin:8px 0 12px;position:relative;color:var(--gold-bright);text-transform:uppercase}
+.invest-hero .num small{font-family:var(--mono);font-size:14px;font-weight:500;opacity:.75;letter-spacing:.5px;color:var(--off-white);display:inline-block;margin-left:8px}
+.invest-hero .msg{font-size:15px;line-height:1.6;position:relative;max-width:720px;color:var(--body)}
+.invest-hero .msg b{color:var(--gold-bright);font-weight:700}
+
+/* buttons */
+.pillbtn{display:inline-flex;align-items:center;gap:10px;padding:16px 26px;background:var(--gold);color:#0a0a0a;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border-radius:4px;text-decoration:none;border:none;cursor:pointer;transition:all .2s;box-shadow:0 6px 18px var(--gold-glow)}
+.pillbtn:hover{background:var(--gold-bright);transform:translateY(-2px);box-shadow:0 10px 26px var(--gold-glow);color:#0a0a0a}
+.pillbtn.ghost{background:transparent;color:var(--gold);border:1.5px solid var(--gold);box-shadow:none}
+.pillbtn.ghost:hover{background:var(--gold-soft);color:var(--gold-bright)}
+.pillbtn.hazard{background:var(--hazard);color:#0a0a0a;box-shadow:0 6px 18px rgba(255,107,53,.35)}
+.pillbtn.hazard:hover{background:var(--hazard-bright);color:#0a0a0a}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:26px}
+
+/* pills */
+.deliv{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px}
+.pill{font-family:var(--mono);font-size:10px;letter-spacing:.9px;padding:5px 10px;background:var(--bg-3);color:var(--gold);border:1px solid var(--gold-deep);border-radius:3px;font-weight:600;text-transform:uppercase}
+.pill.h{color:var(--hazard-bright);border-color:#7a3418;background:rgba(255,107,53,.08)}
+
+/* warn / compliance */
+.warn-card{background:var(--bg-2);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:0 6px 6px 0;padding:22px 26px;margin:16px 0}
+.warn-card.h{border-left-color:var(--hazard)}
+.warn-card h4{font-family:var(--disp);font-size:22px;color:var(--gold);margin-bottom:10px;font-weight:400;letter-spacing:1px;text-transform:uppercase}
+.warn-card.h h4{color:var(--hazard-bright)}
+.warn-card h4::before{content:'▸ ';color:var(--gold)}
+.warn-card.h h4::before{color:var(--hazard)}
+.warn-card p{font-size:14px;color:var(--body);line-height:1.7}
+.warn-card p b{color:var(--off-white);font-weight:600}
+.warn-card p em{color:var(--gold);font-style:italic;font-weight:500}
+
+/* merch showcase (son's sticker section) */
+.merch-hero{background:linear-gradient(135deg,#1a0d05,#2a1808);border:1px solid var(--hazard);border-radius:8px;padding:32px;margin:24px 0;position:relative;overflow:hidden}
+.merch-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:280px;height:280px;background:radial-gradient(circle,rgba(255,107,53,.20),transparent 70%);border-radius:50%}
+.merch-hero .k{font-family:var(--mono);font-size:10.5px;letter-spacing:1.8px;color:var(--hazard-bright);text-transform:uppercase;font-weight:700;margin-bottom:8px;position:relative}
+.merch-hero h3{font-family:var(--disp);font-size:36px;color:var(--off-white);letter-spacing:1.5px;line-height:1;margin-bottom:12px;position:relative;text-transform:uppercase}
+.merch-hero h3 em{font-style:italic;color:var(--hazard-bright);font-weight:400}
+.merch-hero p{font-size:15px;color:var(--body);line-height:1.65;max-width:720px;position:relative}
+.merch-hero p b{color:var(--off-white);font-weight:600}
+
+/* sticker mockups (SVG icons faked as pills) */
+.sticker-row{display:flex;gap:14px;flex-wrap:wrap;margin:20px 0;position:relative}
+.sticker{width:72px;height:72px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:14px;color:#0a0a0a;letter-spacing:.5px;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.4);transform:rotate(-3deg);transition:transform .2s;text-align:center;padding:6px;line-height:1;text-transform:uppercase}
+.sticker:hover{transform:rotate(0) scale(1.1)}
+.sticker.s1{background:var(--gold);transform:rotate(-3deg)}
+.sticker.s2{background:var(--hazard);transform:rotate(4deg);color:#fff}
+.sticker.s3{background:var(--off-white);transform:rotate(-6deg)}
+.sticker.s4{background:#4A9EFF;color:#fff;transform:rotate(2deg)}
+.sticker.s5{background:#7ED957;transform:rotate(-2deg)}
+.sticker.s6{background:#FF6BB5;color:#fff;transform:rotate(5deg)}
+
+/* footer */
+footer{border-top:1px solid var(--line);background:#050505;padding:44px 24px 28px;margin-top:60px;position:relative;z-index:2}
+.foot-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}
+.foot-brand{display:flex;flex-direction:column;gap:6px}
+.foot-brand .l{font-family:var(--disp);color:var(--gold);font-size:18px;letter-spacing:1.2px;text-transform:uppercase}
+.foot-brand .l span{color:var(--off-white);margin:0 4px;font-family:var(--sans);font-weight:800;font-size:14px}
+.foot-brand .s{font-family:var(--mono);font-size:10px;color:var(--mute);letter-spacing:1px;text-transform:uppercase;font-weight:500}
+.foot-links{display:flex;gap:22px;font-family:var(--mono);font-size:11px;color:var(--body);letter-spacing:.4px;flex-wrap:wrap;font-weight:500}
+.foot-links a{color:var(--body);font-weight:500}
+.foot-links a:hover{color:var(--gold)}
+.foot-legal{font-family:var(--mono);font-size:10px;color:var(--mute-soft);letter-spacing:.4px;max-width:1200px;margin:24px auto 0;text-align:center;line-height:1.7;border-top:1px solid var(--line);padding-top:20px;font-weight:400}
+
+
+/* ==== ROI Calculator · gold-dark gradient ==== */
+.calc{background:linear-gradient(135deg,#3a2a08,#0a0a0a);color:var(--off-white);border:1px solid var(--gold);border-radius:8px;padding:32px 30px;margin:32px 0;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(229,185,75,.20)}
+.calc::before{content:'';position:absolute;top:-80px;right:-80px;width:240px;height:240px;background:radial-gradient(circle,rgba(229,185,75,.35),transparent 70%);pointer-events:none;border-radius:50%}
+.calc-h{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--gold-bright);text-transform:uppercase;font-weight:700;margin-bottom:8px;position:relative}
+.calc-t{font-family:var(--disp);font-size:32px;font-weight:400;color:var(--off-white);margin-bottom:24px;position:relative;letter-spacing:1.2px;line-height:1;text-transform:uppercase}
+.calc-t em{font-style:italic;color:var(--gold-bright);font-weight:400}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;position:relative}
+@media(max-width:700px){.calc-grid{grid-template-columns:1fr}}
+.calc-in{margin-bottom:22px}
+.calc-in:last-child{margin-bottom:0}
+.calc-in label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:1.4px;color:rgba(245,241,232,.72);text-transform:uppercase;font-weight:600;margin-bottom:10px}
+.calc-in input[type=range]{width:100%;accent-color:var(--gold-bright)}
+.calc-in .val{font-family:var(--disp);font-size:28px;color:var(--gold-bright);font-weight:400;margin-top:6px;display:inline-block;margin-right:10px;letter-spacing:1px;text-transform:uppercase}
+.calc-in .val-sub{font-family:var(--mono);font-size:10.5px;color:rgba(245,241,232,.65);letter-spacing:.5px;font-weight:500}
+.calc-out{background:rgba(0,0,0,.30);border:1px solid rgba(229,185,75,.20);border-radius:6px;padding:22px 24px;backdrop-filter:blur(8px)}
+.calc-out .out-r{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(229,185,75,.10);font-size:13px}
+.calc-out .out-r:last-child{border-bottom:none}
+.calc-out .out-r .k{color:rgba(245,241,232,.82);font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:500}
+.calc-out .out-r .v{color:var(--off-white);font-family:var(--mono);font-weight:600;font-size:14px}
+.calc-out .out-r.hero{padding-top:14px;border-top:1px solid rgba(229,185,75,.35);margin-top:8px}
+.calc-out .out-r.hero .k{color:var(--gold-bright);font-weight:700}
+.calc-out .out-r.hero .v{color:var(--gold-bright);font-size:22px;font-family:var(--disp);letter-spacing:1px}
+.calc-note{position:relative;margin-top:18px;padding-top:16px;border-top:1px solid rgba(229,185,75,.20);font-size:12px;color:rgba(245,241,232,.65);line-height:1.6;font-family:var(--mono);letter-spacing:.3px}
+.calc-note b{color:var(--gold-bright);font-weight:600}
+
+/* light mode calc overrides */
+html.light .calc{background:linear-gradient(135deg,var(--gold-deep),#5F4308);border-color:var(--gold-deep)}
+html.light .calc-out{background:rgba(0,0,0,.25)}
+
+/* ==== LIGHT MODE · magazine-print cream + charcoal ==== */
+html.light{background-color:#F5F1E8;color:#0F0E08}
+html.light body{background-color:#F5F1E8;color:#0F0E08}
+html.light header{background:#F5F1E8;border-bottom-color:#D9D2BE}
+html.light main{color:#0F0E08}
+html.light .h1,html.light .h2,html.light .h3,html.light .card-title,html.light .tl-h,html.light .warn-card h4,html.light .brand-txt .n{color:#0F0E08}
+html.light .lead,html.light .p,html.light .card-body,html.light ul.list li,html.light .tl-p,html.light .warn-card p{color:#3A362A}
+html.light .mute,html.light .stamp,html.light .brand-txt .sub,html.light .stat .lbl,html.light .said .from,html.light .card-tag{color:#7A7461}
+html.light .card{background:#FFFFFF;border-color:#E4DFCF;box-shadow:0 4px 14px rgba(15,14,8,.06)}
+html.light .card:hover{border-color:var(--gold-deep);box-shadow:0 8px 22px rgba(15,14,8,.10)}
+html.light .card.gold{background:linear-gradient(180deg,rgba(229,185,75,.08),#FFFFFF);border-color:#D4B45A}
+html.light .card.hazard{background:linear-gradient(180deg,rgba(255,107,53,.06),#FFFFFF);border-color:#E88860}
+html.light .stat{background:#FFFFFF;border-color:#E4DFCF}
+html.light .stat .big{color:var(--gold-deep)}
+html.light .stat.hazard .big{color:#C24515}
+html.light .said{background:#FFFFFF;border-color:#E4DFCF;border-left-color:var(--gold-deep)}
+html.light .said .q{color:#0F0E08}
+html.light .said .from{color:#7A7461}
+html.light .said .from b{color:var(--gold-deep)}
+html.light .means{background:#FFF9E8;border-color:#D4B45A;color:#3A362A}
+html.light .means b.k{color:var(--gold-deep)}
+html.light .means em{color:#C24515}
+html.light .means strong{color:#0F0E08}
+html.light .maptbl{background:#FFFFFF;border-color:#E4DFCF}
+html.light .maptbl th{background:#EFEADB;color:var(--gold-deep);border-bottom-color:#E4DFCF}
+html.light .maptbl td{border-bottom-color:#EFEADB}
+html.light .maptbl td.ask{color:#0F0E08}
+html.light .maptbl td.aaa{color:var(--gold-deep)}
+html.light .maptbl td.custom{color:#C24515}
+html.light .maptbl tr.hero td{background:linear-gradient(180deg,rgba(229,185,75,.14),#FFFFFF)}
+html.light .maptbl tr.hero td.ask{color:var(--gold-deep)}
+html.light .mtbl{background:#FFFFFF;border-color:#E4DFCF}
+html.light .mtbl th{background:#EFEADB;color:var(--gold-deep);border-bottom-color:#E4DFCF}
+html.light .mtbl td{border-bottom-color:#EFEADB;color:#3A362A}
+html.light .mtbl td.row-lbl{color:#0F0E08}
+html.light .mtbl td.now{color:#C24515}
+html.light .mtbl td.aaa{color:var(--gold-deep)}
+html.light .mtbl tr.total td{background:linear-gradient(180deg,rgba(229,185,75,.14),#FFFFFF);border-top-color:var(--gold-deep);border-bottom-color:var(--gold-deep)}
+html.light .mtbl tr.total td.row-lbl{color:#0F0E08}
+html.light .mtbl tr.total td.aaa{color:var(--gold-deep)}
+html.light .mtbl tr.phase0 td{background:#FFF3E0}
+html.light .mtbl tr.phase0 td.aaa{color:#C24515}
+html.light .mtbl tr.save td{background:rgba(229,185,75,.18);color:var(--gold-deep)}
+html.light .warn-card{background:#FFFFFF;border-color:#E4DFCF}
+html.light .pillbtn.ghost{background:#FFFFFF;color:var(--gold-deep);border-color:var(--gold-deep)}
+html.light .pillbtn.ghost:hover{background:#FFF9E8;color:var(--gold-deep)}
+html.light .pill{background:#EFEADB;color:var(--gold-deep);border-color:#D4B45A}
+html.light .pill.h{background:#FFE8D9;color:#C24515;border-color:#E88860}
+html.light .for-tag{background:#FFF3D9;border-color:var(--gold-deep);color:var(--gold-deep)}
+html.light .tl-item::before{background:#F5F1E8;border-color:var(--gold-deep)}
+html.light .tl-item.done::before{background:var(--gold-deep)}
+html.light .tl-item.hero::before{border-color:#C24515;background:#C24515;box-shadow:0 0 0 4px #F5F1E8,0 0 14px rgba(194,69,21,.5)}
+html.light .tl-tag{color:var(--gold-deep)}
+html.light .tl-item.hero .tl-tag{color:#C24515}
+html.light .timeline{border-left-color:#E4DFCF}
+html.light .eyebrow{color:var(--gold-deep)}
+html.light .card-tag{color:var(--gold-deep)}
+html.light .card-tag.h{color:#C24515}
+html.light .dash{background:linear-gradient(180deg,#FFFFFF,#FBF9F4);border-color:var(--gold-deep);box-shadow:0 12px 40px rgba(15,14,8,.08)}
+html.light .dash-head{background:#EFEADB;border-bottom-color:#E4DFCF}
+html.light .dash-head .t{color:#0F0E08}
+html.light .dash-head .rt{color:#7A7461}
+html.light .dash-grid{background:#E4DFCF}
+html.light .dash-cell{background:#FFFFFF}
+html.light .dash-cell .k{color:#7A7461}
+html.light .dash-cell .v{color:var(--gold-deep)}
+html.light .dash-cell .v.o{color:#0F0E08}
+html.light .dash-cell .v.h{color:#C24515}
+html.light .dash-cell .sub{color:#3A362A}
+html.light .dash-cell .sub b{color:#0F0E08}
+html.light .dash-row{border-bottom-color:#EFEADB;color:#3A362A}
+html.light .dash-row .l{color:#0F0E08}
+html.light .dash-row .r{color:var(--gold-deep)}
+html.light .dash-row .r.h{color:#C24515}
+html.light .stack-item{background:#FFFFFF;border-color:#E4DFCF}
+html.light .stack-item:hover{background:#FFF9E8}
+html.light .stack-item .n{color:var(--gold-deep)}
+html.light .stack-item .d{color:#7A7461}
+html.light .invest-hero{background:linear-gradient(135deg,#B8860B,#5F4308);color:#F5F1E8;border-color:var(--gold-deep)}
+html.light .top-strip{background:#0F0E08;border-bottom-color:#2A2418}
+html.light .tab{color:#7A7461}
+html.light .tab:hover{color:#0F0E08}
+html.light .tab.active{color:var(--gold-deep);border-bottom-color:var(--gold-deep);background:linear-gradient(180deg,transparent 60%,rgba(229,185,75,.12))}
+html.light .brand-mark{background:linear-gradient(135deg,var(--gold-deep),#5F4308);color:#FFFFFF;border-color:var(--gold-deep)}
+html.light .brand-txt .n span{color:var(--gold-deep)}
+html.light .stamp b{color:var(--gold-deep)}
+html.light footer{background:#0F0E08;border-top-color:var(--gold-deep)}
+html.light .foot-brand .l{color:var(--gold)}
+html.light .foot-brand .l span{color:#F5F1E8}
+html.light .foot-brand .s,html.light .foot-links,html.light .foot-links a,html.light .foot-legal{color:#B8B39F}
+html.light .foot-links a:hover{color:var(--gold-bright)}
+html.light .road,html.light .road.thin,html.light .road.dim{background:repeating-linear-gradient(90deg,var(--gold-deep) 0 40px,transparent 40px 70px)}
+html.light .warn-card h4::before{color:var(--gold-deep)}
+html.light .warn-card.h h4::before{color:#C24515}
+html.light .warn-card{border-left-color:var(--gold-deep)}
+html.light .warn-card.h{border-left-color:#C24515}
+html.light .shape.a{opacity:.06}
+html.light .shape.b{opacity:.05}
+html.light ul.list li::before{color:var(--gold-deep)}
+html.light ul.list.hazard li::before{color:#C24515}
+
+/* theme toggle chip */
+.theme-tog{position:fixed;top:14px;right:20px;z-index:200;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--gold);color:#0a0a0a;font-family:var(--mono);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;border:1px solid var(--gold-bright);border-radius:20px;cursor:pointer;box-shadow:0 6px 18px var(--gold-glow);transition:transform .2s}
+.theme-tog:hover{transform:translateY(-1px)}
+html.light .theme-tog{background:var(--gold-deep);color:#F5F1E8;border-color:var(--gold-deep);box-shadow:0 6px 18px rgba(139,105,20,.35)}
+@media(max-width:900px){.theme-tog{top:auto;bottom:14px;right:14px}}
+
+</style>
+</head>
+<body>
+
+<button class="theme-tog" id="theme-tog" title="Toggle light/dark"><span id="theme-ico">☀</span><span id="theme-lbl">LIGHT</span></button>
+
+<div class="shape a"></div>
+<div class="shape b"></div>
+
+<div class="top-strip" aria-hidden="true">
+  <div class="top-label">◆ THE ONE-PLATFORM ASK</div>
+  <div class="top-window"><div class="top-track">
+    <span class="n"><span class="src">SANJAY SAID</span>CRM to interact with website · booking calendar · client data · signing contracts.</span>
+    <span class="n"><span class="src">SANJAY SAID</span>Maintain fleet · service history · profit from hire for EACH bike.</span>
+    <span class="n"><span class="src">SANJAY SAID</span>Newsletter automation · push socials — all from ONE platform.</span>
+    <span class="n"><span class="src">STATUS</span>Appointment-only Mon–Fri. Weekend enquiries walking off. That's the bleed.</span>
+    <span class="n"><span class="src">STATUS</span>Hawkesbury + Tasmania · owner-riders · clubs from overnight to 3-week tours.</span>
+    <span class="n"><span class="src">MOAT</span>"Doorstep of Australia's best open roads." That's a hero line.</span>
+    <span class="n"><span class="src">STATUS</span>cruisify.online registered · Hostinger · warmup ready to start Day 1.</span>
+    <span class="n"><span class="src">STATUS</span>No existing CRM — clean slate. Zero migration debt.</span>
+  </div></div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 60 40" fill="#0a0a0a" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- rear wheel -->
+        <circle cx="12" cy="30" r="8" fill="none" stroke="#0a0a0a" stroke-width="2.2"/>
+        <circle cx="12" cy="30" r="2" fill="#0a0a0a"/>
+        <!-- front wheel -->
+        <circle cx="48" cy="30" r="8" fill="none" stroke="#0a0a0a" stroke-width="2.2"/>
+        <circle cx="48" cy="30" r="2" fill="#0a0a0a"/>
+        <!-- frame · tank + seat -->
+        <path d="M18 30 L26 22 L38 22 L44 15 L52 15 L48 30" stroke="#0a0a0a" stroke-width="2.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+        <!-- fuel tank curve -->
+        <path d="M26 22 Q32 18 40 20 L38 22 Z" fill="#0a0a0a"/>
+        <!-- handlebar -->
+        <line x1="52" y1="15" x2="55" y2="10" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="52" y1="15" x2="49" y2="12" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round"/>
+        <!-- engine dot -->
+        <circle cx="30" cy="27" r="2.5" fill="#0a0a0a"/>
+      </svg><span class="rnr">RNR</span></div>
+      <div class="brand-txt">
+        <span class="n">Rent N Ride<span>×</span>AAA by Artigellence</span>
+        <span class="sub">One Platform · Working Prototype · Founder-Direct AI</span>
+      </div>
+    </div>
+    <span class="for-tag">◆ For · Sanjay Chhibber</span>
+    <div class="stamp">
+      Version 1 · <b>July 2026</b><br>
+      Prototype · <b>cruisify.online</b> ✓<br>
+      Confidential · NDA-covered
+    </div>
+  </div>
+  <div class="road thin" style="margin-top:16px"></div>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="insight" role="tab"><span class="n">01</span>The Insight</button>
+    <button class="tab" data-tab="platform" role="tab"><span class="n">02</span>The Platform</button>
+    <button class="tab" data-tab="phase0" role="tab"><span class="n">03</span>Phase 0</button>
+    <button class="tab" data-tab="engine" role="tab"><span class="n">04</span>Engine &amp; Cadence</button>
+    <button class="tab" data-tab="merch" role="tab"><span class="n">05</span>Merch Track</button>
+    <button class="tab" data-tab="math" role="tab"><span class="n">06</span>The Math</button>
+    <button class="tab" data-tab="yes" role="tab"><span class="n">07</span>Yes → Start</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ==================== 01 · INSIGHT ==================== -->
+<section class="panel active" id="insight">
+  <div class="eyebrow">§ 01 <span class="dot">◆</span> The Insight <span class="dot">◆</span> Your Own Words, Read Back</div>
+  <h1 class="h1">One <em>platform</em>. One <span class="under">dashboard</span>.<br>Every bike, every booking, every dollar.</h1>
+  <p class="lead">Sanjay ji — you told me exactly what you need, in one WhatsApp message. Every line below comes from that message, from a live read of rentnride.com.au, and from our conversation on Wednesday. Nothing is invented. The diagnosis is in your own words — the plan follows.</p>
+
+  <div style="position:relative;margin:0 -24px 44px;overflow:hidden;border-top:1px solid var(--gold-deep);border-bottom:1px solid var(--gold-deep)">
+    <img src="https://www.rentnride.com.au/wp-content/uploads/2022/10/ourbikes-banner.jpg" alt="Your fleet, your roads" style="width:100%;display:block;filter:brightness(.6) contrast(1.1);height:280px;object-fit:cover">
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.3),rgba(10,10,10,.8))"></div>
+    <div style="position:absolute;bottom:24px;left:36px;right:36px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px">◆ Your Assets</div>
+      <div style="font-family:var(--disp);font-size:36px;color:var(--off-white);letter-spacing:1.5px;line-height:1;text-transform:uppercase">Seven bikes. <em style="color:var(--gold);font-style:italic">Two locations.</em> Countless roads.</div>
+    </div>
+  </div>
+
+  <h2 class="h2">What you asked for — <em>verbatim</em></h2>
+  <div class="said big">
+    <div class="q">We need CRM to interact with web site for booking calendar + Client data + Signing the contracts + maintain fleet, service history and profit from hire for each bike + Day to day automation for newsletter and updates and postal to push socials from one platform.</div>
+    <div class="from"><b>Sanjay Chhibber</b> · WhatsApp · Yesterday, 10:59</div>
+  </div>
+  <p class="p">That's ten things in one sentence. All wired to one platform. Below is exactly how AAA delivers it — and where the profit-per-bike number, that nobody else in this game shows you, lives.</p>
+
+  <h2 class="h2">What it <em>actually</em> means</h2>
+  <div class="stats">
+    <div class="stat hazard"><div class="big">2</div><div class="lbl">Locations · Hawkesbury &amp; Tasmania · dual local SEO opportunity</div></div>
+    <div class="stat hazard"><div class="big">0</div><div class="lbl">Weekend bookings possible online today · appointment-only</div></div>
+    <div class="stat"><div class="big">10</div><div class="lbl">Things you asked for · one platform delivers them all</div></div>
+    <div class="stat" style="display:none"></div>
+    <div class="stat"><div class="big">$?/bike</div><div class="lbl">Profit per bike — you can't answer this today. You will by Day 30.</div></div>
+  </div>
+
+  <div class="means">
+    <b class="k">◆ The Diagnosis</b>
+    Your USP is <em>owner-riders on the doorstep of Australia's best open roads</em> — you should be answered for every "motorcycle hire Sydney" or "Great Ocean Road bike rental" search. One clean-slate advantage first: <strong>you don't have a CRM today — zero migration debt.</strong> We build exactly your stack from Day 1. Now the leaks: <strong>appointment-only</strong> means every Saturday enquiry walks off. <strong>No booking widget</strong> means Corey from QLD can't book at 11pm. <strong>Reviews thin on-site</strong> means your best trust asset is invisible. <strong>Clubs are your distribution moat</strong> — a 3-week Tassie tour is 6 weeks of content — but no engine harvests it. And <strong>profit per bike is unknown</strong> — so you can't fire the deadweight or double-down on the winners. Ten asks, one platform. Let's build it.
+  </div>
+
+  <h2 class="h2">The six moats we'll build on</h2>
+  <div class="grid-3">
+    <div class="card gold">
+      <div class="card-tag">Moat 01 · Bookings</div>
+      <div class="card-title">Live Booking · <em>24/7</em></div>
+      <div class="card-body">Voice agent takes weekend calls. Website has a real "Book Now" button. Corey books at 11pm and pays deposit. <b>Zero appointment-only leakage.</b></div>
+    </div>
+    <div class="card gold">
+      <div class="card-tag">Moat 02 · Clubs</div>
+      <div class="card-title">Content Engine · <em>from your clubs</em></div>
+      <div class="card-body">Every club ride harvested → Rider Story cards → LinkedIn / IG / Reddit / newsletter. Your existing community becomes your growth engine.</div>
+    </div>
+    <div class="card gold">
+      <div class="card-tag">Moat 03 · Findable</div>
+      <div class="card-title">Seen by AI &amp; Google</div>
+      <div class="card-body">llms.txt, schema, dual GBP (Hawkesbury + Tasmania), reviews harvest. ChatGPT names Rent N Ride for <em>"best bike rental Sydney"</em>.</div>
+    </div>
+    <div class="card hazard">
+      <div class="card-tag h">Moat 04 · Profit per bike</div>
+      <div class="card-title">The Number · <em>nobody else shows</em></div>
+      <div class="card-body">Revenue per hire − service cost − depreciation = P&amp;L per asset. Fire the deadweight. Buy more of the winners.</div>
+    </div>
+    <div class="card hazard">
+      <div class="card-tag h">Moat 05 · Merch</div>
+      <div class="card-title">Rider Series · <em>at every touchpoint</em></div>
+      <div class="card-body">Branded patches, route packs, rider gear. Featured at booking checkout as upsells, handed free with every 3-day+ hire. Every rider a walking billboard. <b>Untapped revenue channel today.</b></div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Moat 06 · Compliance</div>
+      <div class="card-title">Your Name Stays <em>Clean</em></div>
+      <div class="card-body">Contracts e-signed, insurance verified, licence checked, Spam Act clean, GST-invoicing correct. The unglamorous plumbing that stops legal grief.</div>
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <button class="pillbtn" data-goto="platform">See The Platform →</button>
+    <button class="pillbtn ghost" data-goto="math">Skip to The Math</button>
+  </div>
+</section>
+
+<!-- ==================== 02 · THE PLATFORM ==================== -->
+<section class="panel" id="platform">
+  <div class="eyebrow">§ 02 <span class="dot">◆</span> The Platform <span class="dot">◆</span> Your Ten Asks · One Dashboard</div>
+  <h1 class="h1">You asked for <em>one platform</em>.<br>Here's what it looks <span class="under">at 8am Monday</span>.</h1>
+  <p class="lead">One dashboard, one login. Underneath it: six best-of-breed tools glued together with automation. You never touch them — you see one screen. This is what Sanjay logs into every morning:</p>
+
+  <div class="dash">
+    <div class="dash-head">
+      <div class="lt">
+        <div class="dot"></div>
+        <div class="t">Rent N Ride · Operations Cockpit</div>
+      </div>
+      <div class="rt">Mon 20 Jul 2026 · 08:04</div>
+    </div>
+    <div class="dash-grid">
+      <div class="dash-cell">
+        <div class="k">This week's bookings</div>
+        <div class="v">14</div>
+        <div class="sub"><b>+3 vs last week</b> · A$8,420 revenue booked</div>
+        <div style="margin-top:14px">
+          <div class="dash-row"><span class="l">Fri · Softail Deluxe</span><span class="r">3-day</span></div>
+          <div class="dash-row"><span class="l">Sat · Triumph Tiger 850</span><span class="r">Weekend</span></div>
+          <div class="dash-row"><span class="l">Sun · Iron 883</span><span class="r">Day</span></div>
+        </div>
+      </div>
+      <div class="dash-cell">
+        <div class="k">Profit per bike · top 3</div>
+        <div class="v">$5,240</div>
+        <div class="sub">Triumph Tiger 850 · <b>YTD net</b></div>
+        <div style="margin-top:14px">
+          <div class="dash-row"><span class="l">Triumph Tiger 850</span><span class="r">$5,240</span></div>
+          <div class="dash-row"><span class="l">Harley Road King</span><span class="r">$4,180</span></div>
+          <div class="dash-row"><span class="l">Iron 883</span><span class="r">$3,650</span></div>
+        </div>
+      </div>
+      <div class="dash-cell">
+        <div class="k">Action needed</div>
+        <div class="v h">3</div>
+        <div class="sub"><b>Service due · contract pending · low review</b></div>
+        <div style="margin-top:14px">
+          <div class="dash-row"><span class="l">Yamaha XVS · service</span><span class="r h">Due Thu</span></div>
+          <div class="dash-row"><span class="l">Corey QLD · contract</span><span class="r h">Awaiting sign</span></div>
+          <div class="dash-row"><span class="l">3-star review</span><span class="r h">Respond</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="dash-grid" style="grid-template-columns:1fr 1fr 1fr 1fr">
+      <div class="dash-cell"><div class="k">Fleet online</div><div class="v o" style="font-size:24px">5 / 7</div><div class="sub">2 in service</div></div>
+      <div class="dash-cell"><div class="k">This month's socials</div><div class="v o" style="font-size:24px">42</div><div class="sub">posts published · 8.2K reach</div></div>
+      <div class="dash-cell"><div class="k">Newsletter open</div><div class="v o" style="font-size:24px">38%</div><div class="sub">vs industry avg 21%</div></div>
+      <div class="dash-cell"><div class="k">Reviews harvested</div><div class="v o" style="font-size:24px">7 new</div><div class="sub">→ posts, GBP, video overlays</div></div>
+    </div>
+  </div>
+
+  <p class="p" style="text-align:center;font-family:var(--mono);font-size:12px;color:var(--mute);letter-spacing:1px;text-transform:uppercase">Illustrative mock — final design tailored with you in Phase 0</p>
+
+  <h2 class="h2">Your fleet today · <em>the assets we track profit on</em></h2>
+  <p class="p">Seven bikes live on rentnride.com.au right now. Once the Rental Ops Cockpit is live, <b>each one carries its own P&amp;L</b> — revenue per hire, service cost, downtime, depreciation. You'll know within 30 days which bikes to keep buying and which to retire. Here's your current fleet:</p>
+  <div class="grid-4" style="grid-template-columns:repeat(4,1fr);gap:12px">
+    <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--line)';this.style.transform='none'">
+      <img src="https://www.rentnride.com.au/wp-content/uploads/2024/05/Harley_Davidson_2013_Road_King_Thumb_1-360x270.jpg" alt="Harley Davidson · Road King" style="width:100%;height:130px;object-fit:cover;display:block;background:#1a1a1a" loading="lazy">
+      <div style="padding:10px 12px 12px">
+        <div style="font-family:var(--disp);font-size:14px;color:var(--off-white);letter-spacing:.5px;line-height:1.1;text-transform:uppercase;margin-bottom:4px">Harley Davidson · Road King</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.8px;text-transform:uppercase">Cruiser · 1690cc</div>
+      </div>
+    </div>
+    <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--line)';this.style.transform='none'">
+      <img src="https://www.rentnride.com.au/wp-content/uploads/2024/05/harley-davidson-softail-deluxe-thumb-1-1-360x270.jpg" alt="Harley Davidson · Softail Deluxe" style="width:100%;height:130px;object-fit:cover;display:block;background:#1a1a1a" loading="lazy">
+      <div style="padding:10px 12px 12px">
+        <div style="font-family:var(--disp);font-size:14px;color:var(--off-white);letter-spacing:.5px;line-height:1.1;text-transform:uppercase;margin-bottom:4px">Harley Davidson · Softail Deluxe</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.8px;text-transform:uppercase">Cruiser · 1690cc</div>
+      </div>
+    </div>
+    <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--line)';this.style.transform='none'">
+      <img src="https://www.rentnride.com.au/wp-content/uploads/2026/07/HD-360x270.jpeg" alt="Harley Davidson · Sportster Iron 883" style="width:100%;height:130px;object-fit:cover;display:block;background:#1a1a1a" loading="lazy">
+      <div style="padding:10px 12px 12px">
+        <div style="font-family:var(--disp);font-size:14px;color:var(--off-white);letter-spacing:.5px;line-height:1.1;text-transform:uppercase;margin-bottom:4px">Harley Davidson · Sportster Iron 883</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.8px;text-transform:uppercase">Cruiser · 883cc</div>
+      </div>
+    </div>
+    <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--line)';this.style.transform='none'">
+      <img src="https://www.rentnride.com.au/wp-content/uploads/2026/07/Enfield--360x270.jpeg" alt="Royal Enfield · Classic 350" style="width:100%;height:130px;object-fit:cover;display:block;background:#1a1a1a" loading="lazy">
+      <div style="padding:10px 12px 12px">
+        <div style="font-family:var(--disp);font-size:14px;color:var(--off-white);letter-spacing:.5px;line-height:1.1;text-transform:uppercase;margin-bottom:4px">Royal Enfield · Classic 350</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.8px;text-transform:uppercase">Cruiser · 346cc</div>
+      </div>
+    </div>
+    <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--line)';this.style.transform='none'">
+      <img src="https://www.rentnride.com.au/wp-content/uploads/2022/09/1-7-360x270.jpeg" alt="Triumph · Thunderbird LT 1700" style="width:100%;height:130px;object-fit:cover;display:block;background:#1a1a1a" loading="lazy">
+      <div style="padding:10px 12px 12px">
+        <div style="font-family:var(--disp);font-size:14px;color:var(--off-white);letter-spacing:.5px;line-height:1.1;text-transform:uppercase;margin-bottom:4px">Triumph · Thunderbird LT 1700</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.8px;text-transform:uppercase">Cruiser · 1700cc</div>
+      </div>
+    </div>
+    <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--line)';this.style.transform='none'">
+      <img src="https://www.rentnride.com.au/wp-content/uploads/2022/09/Tiger-360x270.jpeg" alt="Triumph · Tiger 850 Sport" style="width:100%;height:130px;object-fit:cover;display:block;background:#1a1a1a" loading="lazy">
+      <div style="padding:10px 12px 12px">
+        <div style="font-family:var(--disp);font-size:14px;color:var(--off-white);letter-spacing:.5px;line-height:1.1;text-transform:uppercase;margin-bottom:4px">Triumph · Tiger 850 Sport</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.8px;text-transform:uppercase">Adventure · 888cc</div>
+      </div>
+    </div>
+    <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--line)';this.style.transform='none'">
+      <img src="https://www.rentnride.com.au/wp-content/uploads/2022/09/XVS1300-1-360x270.png" alt="Yamaha · XVS1300A" style="width:100%;height:130px;object-fit:cover;display:block;background:#1a1a1a" loading="lazy">
+      <div style="padding:10px 12px 12px">
+        <div style="font-family:var(--disp);font-size:14px;color:var(--off-white);letter-spacing:.5px;line-height:1.1;text-transform:uppercase;margin-bottom:4px">Yamaha · XVS1300A</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.8px;text-transform:uppercase">Cruiser · 1300cc</div>
+      </div>
+    </div>
+  </div>
+  <p class="p" style="font-size:12px;color:var(--mute);text-align:center;font-family:var(--mono);letter-spacing:1px;text-transform:uppercase">◆ Live from rentnride.com.au / our-bikes</p>
+
+  <h2 class="h2">Your ten asks · <em>one-to-one</em> · what covers what</h2>
+  <table class="maptbl">
+    <thead>
+      <tr><th>You said</th><th>AAA service that covers it</th><th>Custom Rental Ops layer</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="ask">CRM interact with website</td><td class="aaa">Attribution Dashboard + Findable Layer</td><td class="custom">Widget embed on rentnride.com.au</td></tr>
+      <tr><td class="ask">Booking calendar</td><td class="aaa">— (new module)</td><td class="custom">Cal.com wired to fleet availability</td></tr>
+      <tr><td class="ask">Client data</td><td class="aaa">Digital Clone data spine</td><td class="custom">Airtable client table (name, licence, ride history)</td></tr>
+      <tr><td class="ask">Signing the contracts</td><td class="aaa">— (new module)</td><td class="custom">DocuSign auto-triggered on booking confirm</td></tr>
+      <tr><td class="ask">Maintain fleet</td><td class="aaa">— (new module)</td><td class="custom">Airtable fleet (bike, rego, status, location)</td></tr>
+      <tr><td class="ask">Service history per bike</td><td class="aaa">— (new module)</td><td class="custom">Service log linked to each bike record</td></tr>
+      <tr class="hero"><td class="ask">◆ Profit per bike</td><td class="aaa">— (new module)</td><td class="custom">Custom dashboard: rev − service − depreciation = P&amp;L per asset</td></tr>
+      <tr><td class="ask">Newsletter automation</td><td class="aaa">Weekly Growth Engine + Email Compliance</td><td class="custom">Beehiiv + SPF/DKIM/DMARC</td></tr>
+      <tr><td class="ask">Push to socials · one platform</td><td class="aaa">Weekly Growth Engine + Distribution</td><td class="custom">Buffer; 1 anchor → 6 platform-native cuts</td></tr>
+      <tr><td class="ask">From ONE platform</td><td class="aaa">The AAA Dashboard becomes it</td><td class="custom">Everything hangs off the cockpit above</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="h2">The underlying stack · <em>tools you own, at cost</em></h2>
+  <p class="p">Six best-of-breed platforms, glued together with automation. You pay ~A$100/month passthrough directly (no markup). If you ever leave AAA, everything stays with you — the accounts, the data, the automations.</p>
+  <div class="stack">
+    <div class="stack-item"><div class="n">Cal.com</div><div class="d">Bookings + calendar</div></div>
+    <div class="stack-item"><div class="n">Airtable</div><div class="d">Fleet · service · clients</div></div>
+    <div class="stack-item"><div class="n">DocuSign</div><div class="d">Contract e-sign</div></div>
+    <div class="stack-item"><div class="n">Stripe</div><div class="d">Deposits + payment</div></div>
+    <div class="stack-item"><div class="n">Buffer</div><div class="d">6-platform social</div></div>
+    <div class="stack-item"><div class="n">Beehiiv</div><div class="d">Newsletter engine</div></div>
+  </div>
+
+  <div class="cta-row">
+    <button class="pillbtn" data-goto="phase0">See Phase 0 →</button>
+  </div>
+</section>
+
+<!-- ==================== 03 · PHASE 0 ==================== -->
+<section class="panel" id="phase0">
+  <div class="eyebrow">§ 03 <span class="dot">◆</span> Phase 0 <span class="dot">◆</span> Diagnostic &amp; First Working Result</div>
+  <h1 class="h1">By Day 10, a working <em>Voice Agent</em><br>+ a live <span class="under">Book Now</span> button.</h1>
+  <p class="lead">Phase 0 is <strong>A$4,500 · one-time · at start · 100% refundable up to Day 30</strong>. By Day 10 you see two working results on your real data: a voice agent taking a weekend enquiry, AND a "Book Now" button on rentnride.com.au that actually takes a booking. <em>Risk sits on me. Scope stays alive — we tailor whatever's needed at each meeting, as we progress.</em></p>
+
+  <div class="stats">
+    <div class="stat"><div class="big">$4,500</div><div class="lbl">Phase 0 · one-time · at start</div></div>
+    <div class="stat hazard"><div class="big">100%</div><div class="lbl">Refundable up to Day 30 · no questions</div></div>
+    <div class="stat"><div class="big">Day 10</div><div class="lbl">Voice Agent LIVE + booking widget LIVE</div></div>
+    <div class="stat hazard"><div class="big">Direct</div><div class="lbl">Founder-direct · every meeting · every phase</div></div>
+  </div>
+
+  <h2 class="h2">The two <em>first working results</em></h2>
+  <div class="grid-2">
+    <div class="card gold">
+      <div class="card-tag">Hero 01 · Weekend calls stop leaking</div>
+      <div class="card-title">Voice Agent on 02 4588 6666</div>
+      <div class="card-body">
+        AI voice agent live on your business line by <b>Day 10</b>. Handles after-hours and weekend enquiries. Checks bike availability. Quotes hire pricing. Books directly into the fleet calendar. Sends transcript to your WhatsApp. Won't sign contracts or confirm insurance — captures, qualifies, books, hands off to you Monday morning. <b>Every weekend enquiry that walks off today gets caught tomorrow.</b>
+      </div>
+      <div class="deliv"><span class="pill">Live Day 10</span><span class="pill">Founder-built</span><span class="pill">Yours to keep</span></div>
+    </div>
+    <div class="card hazard">
+      <div class="card-tag h">Hero 02 · Corey in QLD books at 11pm</div>
+      <div class="card-title">Live "Book Now" · <em>on your site</em></div>
+      <div class="card-body">
+        A real booking widget embedded on rentnride.com.au. Rider picks a bike, picks dates, sees availability in real time, pays deposit via Stripe, gets DocuSign contract emailed. <b>Your first online booking without you touching your phone happens in Week 2.</b>
+      </div>
+      <div class="deliv"><span class="pill h">Live Day 10</span><span class="pill h">Stripe integrated</span><span class="pill h">Contract auto-sent</span></div>
+    </div>
+  </div>
+
+  <h2 class="h2">The invisible fortnight — every foundation piece</h2>
+  <div class="timeline">
+    <div class="tl-item done">
+      <div class="tl-tag">Day 1</div>
+      <div class="tl-h">Saturday kickoff · 90 minutes</div>
+      <div class="tl-p">At the workshop or a café. Logins together (Google, socials, aggregator sites). Cousin domain <b>cruisify.online</b> already registered (Hostinger ✓). Ideal customer sentence locked (my read: weekend adventure riders + Tasmania touring + local Hawkesbury clubs). Voice capture — 30–40 min of you talking bikes, roads, best rides. <b>Every piece of content forever comes from this recording.</b></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-tag">Days 1–3</div>
+      <div class="tl-h">Findable Diagnostic delivered</div>
+      <div class="tl-p">Written audit: where Rent N Ride lives in ChatGPT / Claude / Perplexity / Google AI today. SPF/DKIM/DMARC status on rentnride.com.au. Schema audit. GBP audit both offices (Hawkesbury + Tasmania). Reviews harvest — every existing Google/Facebook review pulled into a repurposable library. Plain English, decision-ready.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-tag">Days 1–14</div>
+      <div class="tl-h">Cousin domain warmup begins</div>
+      <div class="tl-p">Cousin domain <b>cruisify.online</b> (Hostinger, ✓ already done) warmed for 2–4 weeks so outbound email lands in the inbox. Your main <b>rentnride.com.au</b> is never put at risk. Warmup clock started the day the domain was booked — can't be rushed.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-tag">Days 3–7</div>
+      <div class="tl-h">Fleet import + Airtable spine built</div>
+      <div class="tl-p">Every bike in your fleet imported into Airtable: make, model, rego, VIN, service intervals, purchase cost, hire rates, current status, location. Client history imported. Service log started. <b>The data foundation the profit-per-bike number sits on.</b></div>
+    </div>
+    <div class="tl-item hero">
+      <div class="tl-tag">Day 10</div>
+      <div class="tl-h">◆ First Working Result</div>
+      <div class="tl-p">Voice Agent live on 02 4588 6666. Book Now widget live on rentnride.com.au. Stripe deposits flowing. DocuSign contracts triggering. You watch a real weekend enquiry come in, get quoted, get booked, deposit paid, contract signed — all before you've had your coffee. <b>This is the moment.</b></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-tag">Days 10–30</div>
+      <div class="tl-h">Refund window open · your call</div>
+      <div class="tl-p">Between Day 10 and Day 30 you decide: continue into Build &amp; Retainer — or take a full refund of A$4,500. <b>No questions asked.</b> Everything built stays with you either way.</div>
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <button class="pillbtn" data-goto="engine">See Engine &amp; Cadence →</button>
+  </div>
+</section>
+
+<!-- ==================== 04 · ENGINE & CADENCE ==================== -->
+<section class="panel" id="engine">
+  <div class="eyebrow">§ 04 <span class="dot">◆</span> Engine &amp; Cadence <span class="dot">◆</span> The Weekly Growth Machine</div>
+  <h1 class="h1">A$2,500 a month.<br>Six agents. <em>One weekly engine.</em></h1>
+  <p class="lead">A tailored retainer for Rent N Ride — sized to your revenue band today with room to scale. Direct founder access, every meeting. 3-month break clause. You keep the code, the prompts, the credentials, the data. <em>We tailor whatever's needed at each meeting, as we progress</em> — the plan flexes to what the business is asking for at that moment.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="big">$2,500</div><div class="lbl">Monthly retainer · Months 1–6</div></div>
+    <div class="stat hazard"><div class="big">6</div><div class="lbl">Agents · rolled out progressively</div></div>
+    <div class="stat"><div class="big">4h/wk</div><div class="lbl">Growth Engine session · everything shipped</div></div>
+    <div class="stat hazard"><div class="big">3 mo</div><div class="lbl">Break clause · walk away, keep what's built</div></div>
+  </div>
+
+  <h2 class="h2">The six agents, in the order they land</h2>
+  <div class="grid-3">
+    <div class="card gold">
+      <div class="card-tag">Agent 01 · Phase 0 delivered</div>
+      <div class="card-title">Voice Agent + Booking</div>
+      <div class="card-body">Kept live and tuned monthly. New scripts for new bikes, seasonal specials, Tassie tour packages. <b>Zero missed weekend enquiries.</b></div>
+    </div>
+    <div class="card gold">
+      <div class="card-tag">Agent 02 · Month 1</div>
+      <div class="card-title">Rental Ops Cockpit</div>
+      <div class="card-body">Your dashboard. Bookings, fleet, service, profit-per-bike, socials, reviews — one screen, updated live. <b>The "one platform" you asked for.</b></div>
+    </div>
+    <div class="card hazard">
+      <div class="card-tag h">Agent 03 · Month 2</div>
+      <div class="card-title">Findable Layer</div>
+      <div class="card-body">llms.txt, schema for both offices, FAQ schema on rental questions, weekly GBP posts Hawkesbury + Tassie. AI answers <em>"best bike rental Sydney"</em> and <em>"Tasmania motorcycle tour"</em> with your name.</div>
+    </div>
+    <div class="card hazard">
+      <div class="card-tag h">Agent 04 · Month 2</div>
+      <div class="card-title">Content &amp; Club Engine</div>
+      <div class="card-body">Weekly anchor content — 4 rotating formats (below). Every club ride harvested. Every review repurposed. <b>Your clubs become your marketing team.</b></div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Agent 05 · Month 3</div>
+      <div class="card-title">Attribution Dashboard</div>
+      <div class="card-body">Every booking, every social touch, every ad dollar traced. <b>Lead → source → matured → $$ visible daily.</b> Proves the $500/mo ad spend, kills what leaks, doubles down on what works.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Agent 06 · Month 3</div>
+      <div class="card-title">Merch Engine + <em>Digital Clone GPT</em></div>
+      <div class="card-body">Printful + Sticker Mule integrated. Rider Series at checkout. Route packs printed. Plus a private GPT trained on your voice — drafts posts, emails, replies in your tone. <b>See Merch Track tab.</b></div>
+    </div>
+    <div class="card" style="grid-column:span 3">
+      <div class="card-tag">Bonus · Month 4+</div>
+      <div class="card-title">Podcast · <em>gated at 100+ followers on any channel</em></div>
+      <div class="card-body">"The Rent N Ride Show" or "Road Notes" — audio from the video scripts. Rider stories from clubs. Not before: <b>a podcast with no audience is a diary.</b></div>
+    </div>
+  </div>
+
+  <div class="road" style="margin:44px 0 32px"></div>
+
+  <h2 class="h2">Weekly Growth Engine · <em>tuned for bikes</em></h2>
+  <p class="p">One 4-hour session a week. One anchor piece. Nothing written twice. Four anchor formats rotate — every one designed to sell bookings and grow the audience:</p>
+
+  <div class="grid-4">
+    <div class="card">
+      <div class="card-tag h">Anchor 01 · weekly</div>
+      <div class="card-title" style="font-size:20px">Bike of the Week</div>
+      <div class="card-body">Fleet spotlight — one bike, its story, its ideal ride. <b>Sells THAT bike into weekend bookings.</b></div>
+    </div>
+    <div class="card">
+      <div class="card-tag h">Anchor 02 · weekly</div>
+      <div class="card-title" style="font-size:20px">Route of the Week</div>
+      <div class="card-body">Hawkesbury river run, Great Ocean, Tassie loop. Map + photos + drone video. <b>Search-friendly.</b></div>
+    </div>
+    <div class="card">
+      <div class="card-tag h">Anchor 03 · weekly</div>
+      <div class="card-title" style="font-size:20px">Rider Story</div>
+      <div class="card-body">Harvested from clubs. A 3-week Tassie tour = 6 weeks of content. <b>Your clubs = your engine.</b></div>
+    </div>
+    <div class="card">
+      <div class="card-tag h">Anchor 04 · weekly</div>
+      <div class="card-title" style="font-size:20px">Behind-the-Scenes</div>
+      <div class="card-body">Workshop, gear reviews, owner-riders talking bikes. <b>The authenticity moat.</b></div>
+    </div>
+  </div>
+
+  <h2 class="h2">Every anchor cut into <em>seven platforms</em></h2>
+  <ul class="list">
+    <li><b>LinkedIn</b> — Sanjay's professional network, tourism industry contacts, corporate ride-day enquiries</li>
+    <li><b>Facebook</b> — Hawkesbury local groups, Australian rider groups (huge audience, low competition for a real business)</li>
+    <li><b>Instagram</b> — bike glamour shots, reels, story sequences, checkout-driving carousels</li>
+    <li><b>TikTok</b> — vertical 30–60s road POV, gear talk, "which bike for this ride?" quick answers</li>
+    <li><b>YouTube Shorts</b> — same video, wider reach, evergreen SEO for route names</li>
+    <li><b>Reddit</b> — r/AusMotor, r/motorcycles, r/sydney — where compliant, non-salesy, genuine contributions</li>
+    <li><b>Google Business Profile</b> — weekly posts on both office listings, review responses, event announcements</li>
+  </ul>
+
+  <h2 class="h2">Monthly · <em>the deep-touch layer</em></h2>
+  <ul class="list hazard">
+    <li><b>Newsletter to the cleaned booking list</b> — Beehiiv, in Sanjay's voice, monthly. New bikes, new routes, new Tassie tour dates, member perks.</li>
+    <li><b>Warmed outbound email</b> — from the cousin domain to tourism partners: hotel concierges, adventure travel bloggers, corporate team-building organisers, Bunnings-adjacent trades who ride on weekends.</li>
+    <li><b>Referral partner nurture</b> — the clubs, tour operators, local bike dealers. Monthly co-brandable content they can forward.</li>
+  </ul>
+
+  <div class="cta-row">
+    <button class="pillbtn" data-goto="merch">See The Merch Track →</button>
+  </div>
+</section>
+
+<!-- ==================== 05 · MERCH TRACK ==================== -->
+<section class="panel" id="merch">
+  <div class="eyebrow">§ 05 <span class="dot">◆</span> Merch Track <span class="dot">◆</span> Every Rider · Every Touchpoint · New Revenue</div>
+  <h1 class="h1">Every rider walks in.<br>Every rider walks out with <em>something extra.</em></h1>
+  <p class="lead">Your clubs are built-in demand. A rider on a 3-week Tassie tour wants a patch, a sticker for the helmet, a tee that says <em>"I rode Great Ocean with Rent N Ride."</em> Right now the shop is mentioned on your site but it's not the story. Here's how we turn merch into a real second-revenue channel — and every rider into a walking billboard.</p>
+
+  <div class="merch-hero">
+    <div class="k">◆ The Rider Series</div>
+    <h3>Branded merch. <em>At every touchpoint.</em></h3>
+    <p style="margin-bottom:14px"><b>You own 7 bikes. Every rider who takes one out for 3+ days walks past a checkout screen with something to keep.</b> Sticker for the helmet. Patch for the jacket. Route pack for the tank bag. Photo for Instagram.</p>
+    <p>The maths is simple. <b>90 riders/month × A$25 average merch attach = A$2,250/mo extra revenue at 60% margin = A$1,350/mo net.</b> That's the retainer paid for. Plus a store that runs 24/7 whether you're at the shop or not. Plus — the strategic bit — <b>every rider becomes a walking billboard</b> in their next town, their next club ride, their next weekend post to Instagram.</p>
+    <div class="sticker-row">
+      <div class="sticker s1">GREAT<br>OCEAN</div>
+      <div class="sticker s2">TASSIE<br>LOOP</div>
+      <div class="sticker s3">R N R<br>CLUB</div>
+      <div class="sticker s4">HAWKES<br>BURY</div>
+      <div class="sticker s5">RIDE<br>NSW</div>
+      <div class="sticker s6">EST<br>2020</div>
+    </div>
+    <p style="margin-top:14px"><b>How it lands:</b> print-on-demand via Sticker Mule + Printful (zero inventory risk), Shopify or Ecwid on rentnride.com.au, featured at booking checkout as upsell, handed free with every 3-day+ hire. Route packs at the pickup counter. <em>Nothing sits in a warehouse, everything scales.</em></p>
+  </div>
+
+  <h2 class="h2">The full Rent N Ride merch engine · <em>8 revenue lines</em></h2>
+  <div class="grid-3">
+    <div class="card gold">
+      <div class="card-tag">Line 01 · Stickers</div>
+      <div class="card-title">Rider Series Packs</div>
+      <div class="card-body">6-sticker packs — route-specific (Great Ocean, Tassie Loop, Hawkesbury). <b>A$12/pack · free with 3-day+ hire.</b> Every helmet becomes a moving ad.</div>
+    </div>
+    <div class="card gold">
+      <div class="card-tag">Line 02 · Patches</div>
+      <div class="card-title">Ride Patches · <em>club identity</em></div>
+      <div class="card-body">Embroidered patches for named rides — "Tassie Loop 2026", "Great Ocean Veteran". <b>A$18 each.</b> Club members collect them. Multi-year value.</div>
+    </div>
+    <div class="card gold">
+      <div class="card-tag">Line 03 · Route packs</div>
+      <div class="card-title">Printed &amp; laminated <em>route packs</em></div>
+      <div class="card-body">Turn-by-turn cards for your signature routes — waterproof, glove-friendly, tank-bag sized. <b>A$25/pack.</b> Sells at the counter, keeps riders on your routes.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Line 04 · Riding gear</div>
+      <div class="card-title">Branded Rider Gear</div>
+      <div class="card-body">Tees, hoodies, caps, buffs via Printful. <b>A$35–A$60 range.</b> Featured on riders in club-ride content — visual social currency.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Line 05 · Vouchers</div>
+      <div class="card-title">Gift Vouchers</div>
+      <div class="card-body">Hire vouchers in A$100 / A$250 / A$500 denominations. <b>Christmas, Father's Day, birthdays.</b> Cash upfront, delivery later. Low-effort, high-margin.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Line 06 · Accessories</div>
+      <div class="card-title">Rental Add-Ons</div>
+      <div class="card-body">Top-box hire · phone mount hire · GoPro hire · GPS unit hire · panniers. <b>A$15–A$40/day per item.</b> Add-on at checkout — no extra logistics.</div>
+    </div>
+    <div class="card hazard">
+      <div class="card-tag h">Line 07 · Corporate</div>
+      <div class="card-title">Corporate Ride Days</div>
+      <div class="card-body">Team-building day hires · 6–12 riders · branded merch pack + catered lunch. <b>A$3,000–A$8,000 per booking.</b> B2B, 5× margin, LinkedIn-native selling.</div>
+    </div>
+    <div class="card hazard">
+      <div class="card-tag h">Line 08 · Membership</div>
+      <div class="card-title">Rent N Ride Club <em>Tier</em></div>
+      <div class="card-body">Annual membership — priority booking · 10% off hire · exclusive route packs · quarterly member drops. <b>A$149/yr recurring.</b> Turns clubs into a real subscription business.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag">Line 09 · Photography</div>
+      <div class="card-title">Ride Photo Packages</div>
+      <div class="card-body">Optional pro photographer follows the club ride · edited pack delivered week after. <b>A$200/rider.</b> Sold at booking or on-day upgrade. Content the rider will keep forever + post.</div>
+    </div>
+  </div>
+
+  <div class="road dim" style="margin:44px 0 32px"></div>
+
+  <h2 class="h2">The revenue arithmetic · <em>conservative</em></h2>
+  <p class="p">Not every rider takes every upsell — but the numbers even at low attach rates change the retainer picture:</p>
+  <table class="mtbl">
+    <thead>
+      <tr><th>Merch line</th><th style="text-align:right">Monthly conservative</th><th style="text-align:right">Annual conservative</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="row-lbl">Stickers + Patches (avg A$15/rider · 60 riders/mo)</td><td class="aaa" style="text-align:right">A$900</td><td class="aaa" style="text-align:right">A$10,800</td></tr>
+      <tr><td class="row-lbl">Route Packs (30% of riders × A$25)</td><td class="aaa" style="text-align:right">A$675</td><td class="aaa" style="text-align:right">A$8,100</td></tr>
+      <tr><td class="row-lbl">Rider Gear (10% of riders × A$45)</td><td class="aaa" style="text-align:right">A$405</td><td class="aaa" style="text-align:right">A$4,860</td></tr>
+      <tr><td class="row-lbl">Accessory add-ons (avg A$20/rider · 40 riders/mo)</td><td class="aaa" style="text-align:right">A$800</td><td class="aaa" style="text-align:right">A$9,600</td></tr>
+      <tr><td class="row-lbl">Gift vouchers (avg 5/mo × A$200)</td><td class="aaa" style="text-align:right">A$1,000</td><td class="aaa" style="text-align:right">A$12,000</td></tr>
+      <tr><td class="row-lbl">Corporate Ride Days (1 booking/mo)</td><td class="aaa" style="text-align:right">A$4,000</td><td class="aaa" style="text-align:right">A$48,000</td></tr>
+      <tr><td class="row-lbl">Club Membership (30 members × A$149/yr)</td><td class="aaa" style="text-align:right">A$372</td><td class="aaa" style="text-align:right">A$4,470</td></tr>
+      <tr class="total"><td class="row-lbl">Extra Revenue · Conservative</td><td class="aaa" style="text-align:right">A$8,152 / mo</td><td class="aaa" style="text-align:right">A$97,830 / yr</td></tr>
+      <tr class="save"><td class="row-lbl">💰 That's the retainer paid — 3 times over — from merch alone</td><td style="text-align:right">—</td><td style="text-align:right">A$97K vs A$22.5K spend</td></tr>
+    </tbody>
+  </table>
+  <p class="p" style="font-size:13px;color:var(--mute);margin-top:8px;font-family:var(--mono)">Illustrative, not a guarantee. Real numbers depend on rider volume, seasonal mix, and attach-rate discipline. Honest expectation: <em>merch engine live Month 3, first meaningful revenue Month 4, full compounding by Month 6.</em></p>
+
+  <div class="cta-row">
+    <button class="pillbtn" data-goto="math">See The Math →</button>
+  </div>
+</section>
+
+<!-- ==================== 06 · THE MATH ==================== -->
+<section class="panel" id="math">
+  <div class="eyebrow">§ 06 <span class="dot">◆</span> The Math <span class="dot">◆</span> No Hidden Fees</div>
+  <h1 class="h1">One number to start.<br>One number a month. <em>That's it.</em></h1>
+  <p class="lead">Two numbers to keep separate: <strong>A$4,500 is your Phase 0 fee — one-time, 100% refundable</strong>. Your <strong>monthly retainer</strong> after that is A$2,500, plus A$500/mo protective ad spend (on your card, at cost). Tools (~A$100/mo) also pass through. <strong>Six-month all-in: A$22,500.</strong> That's the entire commercial picture.</p>
+
+  <div class="invest-hero">
+    <div class="k">◆ The AAA Investment · 6-month all-in</div>
+    <div class="num">A$22,500 <small>· A$4,500 start + A$2,500/mo × 6 + A$500/mo ads × 6</small></div>
+    <div class="msg"><b>Phase 0 (A$4,500) 100% refundable up to Day 30.</b> Then A$2,500/month retainer for six months + A$500/month protective ad spend (retargeting only, on your card). Tools (~A$100/mo) pass through at cost. <b>No markup. No hidden fees.</b></div>
+  </div>
+
+  <h2 class="h2">Why this price · <em>what it would cost separately</em></h2>
+  <p class="p">Every service in this engagement bought on the open market in Sydney, 2026. Same scope, agency-billed:</p>
+  <table class="mtbl">
+    <thead>
+      <tr><th>Service · bought separately</th><th style="text-align:right">Sydney market rate</th><th style="text-align:right">6 months</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="row-lbl">Custom CRM + booking + fleet + contract build</td><td class="now" style="text-align:right">A$8,000–15,000 (one-off)</td><td class="aaa" style="text-align:right">A$8,000+</td></tr>
+      <tr><td class="row-lbl">Social media agency · multi-platform organic</td><td class="now" style="text-align:right">A$1,500–5,000 / mo</td><td class="aaa" style="text-align:right">A$9,000–30,000</td></tr>
+      <tr><td class="row-lbl">SEO / AEO agency</td><td class="now" style="text-align:right">A$1,500–3,000 / mo</td><td class="aaa" style="text-align:right">A$9,000–18,000</td></tr>
+      <tr><td class="row-lbl">Voice agent build + monthly hosting</td><td class="now" style="text-align:right">A$3,000 setup + A$300/mo</td><td class="aaa" style="text-align:right">A$4,800+</td></tr>
+      <tr><td class="row-lbl">Weekly content production · articles + video</td><td class="now" style="text-align:right">A$1,000–3,000 / mo</td><td class="aaa" style="text-align:right">A$6,000–18,000</td></tr>
+      <tr><td class="row-lbl">Merch e-commerce integration + design</td><td class="now" style="text-align:right">A$2,000 setup + design fees</td><td class="aaa" style="text-align:right">A$2,000+</td></tr>
+      <tr class="total"><td class="row-lbl">If bought separately · 6 months</td><td class="now" style="text-align:right">—</td><td class="aaa" style="text-align:right">A$38,800 – A$80,800</td></tr>
+      <tr class="save"><td class="row-lbl">💰 AAA all-in · founder-direct · you own everything</td><td style="text-align:right">—</td><td style="text-align:right">A$22,500</td></tr>
+    </tbody>
+  </table>
+  <p class="p" style="font-size:13px;color:var(--mute);margin-top:8px;font-family:var(--mono)">Market benchmarks: Sydney/Melbourne agency rates published 2026 · Cliftons SME Marketing Report + industry survey ranges. Illustration only, not a formal comparison.</p>
+
+  <h2 class="h2">6-month breakdown · <em>line by line</em></h2>
+  <table class="mtbl">
+    <thead>
+      <tr><th>Line item</th><th style="text-align:right">Amount</th><th style="text-align:right">Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr class="phase0"><td class="row-lbl">Phase 0 (one-time · refundable)</td><td class="aaa" style="text-align:right">A$4,500</td><td class="now" style="text-align:right">Refundable up to Day 30</td></tr>
+      <tr><td class="row-lbl">Retainer · Month 1</td><td class="aaa" style="text-align:right">A$2,500</td><td class="now" style="text-align:right">Rental Ops Cockpit shipped · CRM + booking + fleet live</td></tr>
+      <tr><td class="row-lbl">Retainer · Month 2</td><td class="aaa" style="text-align:right">A$2,500</td><td class="now" style="text-align:right">Findable Layer + Content Engine + Club harvest live</td></tr>
+      <tr><td class="row-lbl">Retainer · Month 3</td><td class="aaa" style="text-align:right">A$2,500</td><td class="now" style="text-align:right">Attribution Dashboard + Merch Engine + Rider Series</td></tr>
+      <tr><td class="row-lbl">Retainer · Month 4</td><td class="aaa" style="text-align:right">A$2,500</td><td class="now" style="text-align:right">Digital Clone GPT · podcast may unlock</td></tr>
+      <tr><td class="row-lbl">Retainer · Month 5</td><td class="aaa" style="text-align:right">A$2,500</td><td class="now" style="text-align:right">Full engine compounding · reasonable results</td></tr>
+      <tr><td class="row-lbl">Retainer · Month 6</td><td class="aaa" style="text-align:right">A$2,500</td><td class="now" style="text-align:right">Real results window · profit per bike visible</td></tr>
+      <tr class="phase0"><td class="row-lbl">Ad spend (retargeting only)</td><td class="aaa" style="text-align:right">A$500 × 6 = A$3,000</td><td class="now" style="text-align:right">Precision retargeting on your card · not markup</td></tr>
+      <tr class="total"><td class="row-lbl">6-Month All-In</td><td class="aaa" style="text-align:right">A$22,500</td><td style="text-align:right;color:var(--mute);font-family:var(--mono);font-size:12px">+ ~$600 tools (at cost)</td></tr>
+      <tr class="save"><td class="row-lbl">💰 What you own at Month 6</td><td style="text-align:right">Everything</td><td style="text-align:right">Code · data · agents · content · list</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="h2">What you own at Month 6</h2>
+  <div class="grid-3">
+    <div class="card gold">
+      <div class="card-tag">Systems</div>
+      <div class="card-title">6 Agents, live</div>
+      <div class="card-body">Voice Agent + Booking · Rental Ops Cockpit · Findable Layer · Content &amp; Club Engine · Attribution Dashboard · Merch Sync + Digital Clone GPT. Your code, your accounts.</div>
+    </div>
+    <div class="card gold">
+      <div class="card-tag">Content</div>
+      <div class="card-title">~24 anchor pieces</div>
+      <div class="card-body">Each cut across 7 platforms. <b>~168 posts + 24 videos</b> ranking, tagged, attributable. Plus 6 newsletters and a merch story.</div>
+    </div>
+    <div class="card hazard">
+      <div class="card-tag h">The killer number</div>
+      <div class="card-title">Profit per bike · <em>every bike</em></div>
+      <div class="card-body">You know which bikes make money. Which don't. Which routes to push. Which to retire. <b>The number no competitor can see.</b></div>
+    </div>
+  </div>
+
+  <h2 class="h2">The ROI · <em>slide it, see it</em></h2>
+  <p class="p">Move the sliders to your own honest numbers. The maths updates live. Baseline assumption: 6-month AAA cost = <b>A$22,500 all-in</b>. Extra hires means "over your current baseline."</p>
+
+  <div class="calc">
+    <div class="calc-h">◆ Bike Hire ROI · 6-month projection</div>
+    <div class="calc-t">If AAA gets you from today's pattern to your <em>target</em>, here's what it earns.</div>
+    <div class="calc-grid">
+      <div>
+        <div class="calc-in">
+          <label>Extra hires per month (over baseline)</label>
+          <input type="range" id="r-hires" min="3" max="50" value="15" step="1">
+          <span class="val" id="v-hires">15</span><span class="val-sub">hires / month</span>
+        </div>
+        <div class="calc-in">
+          <label>Average revenue per hire</label>
+          <input type="range" id="r-rev" min="300" max="1500" value="660" step="20">
+          <span class="val" id="v-rev">A$660</span><span class="val-sub">3 days × ~A$220/day avg</span>
+        </div>
+        <div class="calc-in">
+          <label>Net margin on hires (after service, insurance, deprec.)</label>
+          <input type="range" id="r-marg" min="25" max="65" value="45" step="1">
+          <span class="val" id="v-marg">45%</span><span class="val-sub">industry range 30–55%</span>
+        </div>
+        <div class="calc-in">
+          <label>Merch attach revenue / month (conservative)</label>
+          <input type="range" id="r-merch" min="0" max="12000" value="4000" step="500">
+          <span class="val" id="v-merch">A$4,000</span><span class="val-sub">stickers · patches · gear · vouchers</span>
+        </div>
+      </div>
+      <div class="calc-out">
+        <div class="out-r"><span class="k">Extra monthly hire revenue</span><span class="v" id="o-rev">A$9,900</span></div>
+        <div class="out-r"><span class="k">Net from hires (after margin)</span><span class="v" id="o-net">A$4,455</span></div>
+        <div class="out-r"><span class="k">Merch net (~60% margin)</span><span class="v" id="o-mnet">A$2,400</span></div>
+        <div class="out-r"><span class="k">Total extra net · monthly</span><span class="v" id="o-tot">A$6,855</span></div>
+        <div class="out-r"><span class="k">6-month cumulative net</span><span class="v" id="o-6m">A$41,130</span></div>
+        <div class="out-r"><span class="k">AAA all-in spend (6 months)</span><span class="v" id="o-cost">A$22,500</span></div>
+        <div class="out-r hero"><span class="k">Return on investment</span><span class="v" id="o-roi">1.83×</span></div>
+      </div>
+    </div>
+    <div class="calc-note">
+      <b>◆ Honest note</b> — illustrative, not a guarantee. Real outcome depends on your fleet mix, seasonality, weekend take-up, and how fast the Findable + club-content engine compounds. Honest expectation: <b>first signs at 6 weeks · reasonable traction at 3 months · real results by Month 6</b>. Corporate ride days and Tassie tours can add substantially more (not modelled above).
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <button class="pillbtn" data-goto="yes">Yes → Start →</button>
+  </div>
+</section>
+
+<!-- ==================== 07 · YES → START ==================== -->
+<section class="panel" id="yes">
+  <div class="eyebrow">§ 07 <span class="dot">◆</span> Yes → Start <span class="dot">◆</span> Four Things This Week</div>
+  <h1 class="h1">Reply "<em>ride</em>" — Day 1 clock<br>starts <span class="under">the same day.</span></h1>
+  <p class="lead">The single step that cannot be compressed later is the email warmup — 2–4 weeks minimum. Every day we delay is a weekend where the Voice Agent isn't taking Corey's call. Here's exactly how we start:</p>
+
+  <h2 class="h2">The immediate <em>next steps</em></h2>
+  <div class="timeline">
+    <div class="tl-item done">
+      <div class="tl-tag">Step 1 · Today or tomorrow</div>
+      <div class="tl-h">Reply "ride" on WhatsApp</div>
+      <div class="tl-p">cruisify.online is already registered (Hostinger, ✓ done). One WhatsApp line from you and I lock the Saturday kickoff, prep the Phase 0 invoice, start the warmup clock.</div>
+    </div>
+    <div class="tl-item done">
+      <div class="tl-tag">Step 2 · Phase 0 fee</div>
+      <div class="tl-h">A$4,500 · one-time · Phase 0 kicks off</div>
+      <div class="tl-p">Invoice sent on your "ride". Once paid: tools activated on your card, Saturday session locked, cruisify.online warmup fires. Fully refundable up to Day 30 — <b>no questions asked</b>.</div>
+    </div>
+    <div class="tl-item done hero">
+      <div class="tl-tag">Step 3 · Saturday · ~90 min · first time</div>
+      <div class="tl-h">Kickoff at the workshop / a café</div>
+      <div class="tl-p">Logins together. The 30–40 min voice capture — you talking bikes, roads, best rides. Ideal customer sentence locked. Tools activated on your card (~$100/mo passthrough, at cost, no markup).</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-tag">Step 4 · Days 1–10</div>
+      <div class="tl-h">I build. You approve.</div>
+      <div class="tl-p">Fleet imported, Airtable spine built, Voice Agent built &amp; tested, Book Now widget built &amp; wired, DocuSign + Stripe configured. WhatsApp signoff before anything goes live. Day 10 — first weekend booking comes in without you touching your phone.</div>
+    </div>
+  </div>
+
+  <h2 class="h2">Your part · <em>mostly once</em>, then one hour a week</h2>
+  <div class="grid-2">
+    <div class="card gold">
+      <div class="card-tag">Once · at Saturday session</div>
+      <ul class="list" style="margin:6px 0 0">
+        <li>Website login (or web person's contact)</li>
+        <li>Google + socials login access</li>
+        <li>Cousin domain done ✓ · cruisify.online live</li>
+        <li>Fleet spreadsheet (or we build it from Wednesday's chat)</li>
+        <li>30–40 min voice recording · you talking bikes</li>
+        <li>The ~$100/mo tools on your card</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-tag">Weekly · the standing rhythm</div>
+      <ul class="list">
+        <li><b>Saturday · ~1 hour</b> — we review numbers, you approve the coming week's content, we tailor the plan</li>
+        <li><b>WhatsApp signoff · 2 min</b> — before Monday. "OK" or mark changes. Nothing publishes without your yes.</li>
+        <li><b>Forward the strays</b> — someone says "I saw your post" → one WhatsApp line, so leads log to source</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 class="h2">What you <em>never</em> have to do</h2>
+  <ul class="list hazard">
+    <li>Write a single post, article, email, or newsletter</li>
+    <li>Learn a single tool interface (Cal.com, Airtable, DocuSign — you never open them)</li>
+    <li>Touch the ad platform, the schema, the email warmup, the DNS</li>
+    <li>Be on camera. Ever.</li>
+  </ul>
+
+  <div class="warn-card h" style="margin-top:32px">
+    <h4>The honest timeline · no surprises</h4>
+    <p><b>Weeks 1–2</b> · the invisible fortnight. Foundation live, Voice Agent + Book Now shipping. Nothing public yet. <b>Weeks 3–6</b> · warmup completes, cadence live, first re-engagement to the cleaned list. <b>First bookings from the widget. Early signs, not scale.</b> <b>Months 2–3</b> · Findable firing, reviews harvested, GBP compounding for both offices. <b>First real weekend bookings routed through automatically, each stamped with source.</b> <b>Months 3–6</b> · payoff window. Content engine humming, club stories flowing, merch drops shipping, profit-per-bike visible daily. <b>Beyond 6</b> · podcast unlocks, list compounds, engine runs while you ride.</p>
+  </div>
+
+  <div class="cta-row" style="margin-top:36px">
+    <a class="pillbtn hazard" href="https://wa.me/61469313323?text=Sanjay%20here%20from%20Rent%20N%20Ride%20%E2%80%94%20ride.%20Ready%20for%20Phase%200." target="_blank" rel="noopener">WhatsApp: "RIDE" →</a>
+    <a class="pillbtn" href="mailto:raj@artigellence.com?subject=Rent%20N%20Ride%20%C2%B7%20Phase%200%20%C2%B7%20RIDE&body=Hi%20Raj%2C%0A%0ARide.%20Please%20send%20the%20Phase%200%20invoice%20and%20let's%20lock%20the%20Saturday%20session.%0A%0ASanjay%20%C2%B7%20Rent%20N%20Ride">Email: raj@artigellence.com</a>
+    <a class="pillbtn ghost" href="tel:+61469313323">Call · +61 469 313 323</a>
+  </div>
+
+  <p class="p" style="margin-top:36px;font-family:var(--sans);font-style:italic;font-size:17px;color:var(--body);border-top:1px solid var(--line);padding-top:28px">
+    Sanjay ji — you asked for one platform that does everything. This is exactly what we build. Nothing overwhelming — <em>we tailor whatever's needed at each meeting, as we progress</em>. The plan flexes to what your business is asking for at that moment. Founder-direct, every step. Look forward to your <em>ride</em>. — <b style="color:var(--gold);font-style:normal">Raj</b>
+  </p>
+</section>
+
+</main>
+
+<div class="road" style="margin:0"></div>
+
+<footer>
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <span class="l">RENT N RIDE<span>×</span>AAA BY ARTIGELLENCE</span>
+      <span class="s">Founder-Direct AI · Sydney · Tailored at every meeting</span>
+    </div>
+    <div class="foot-links">
+      <a href="https://rentnride.com.au" target="_blank">rentnride.com.au</a>
+      <a href="https://cruisify.online" target="_blank">cruisify.online</a>
+      <a href="https://aaa.artigellence.com" target="_blank">aaa.artigellence.com</a>
+      <a href="https://rajsingh.online" target="_blank">rajsingh.online</a>
+      <a href="mailto:raj@artigellence.com">raj@artigellence.com</a>
+      <a href="tel:+61469313323">+61 469 313 323</a>
+    </div>
+  </div>
+  <div class="foot-legal">
+    Prepared for Sanjay Chhibber / Rent N Ride under mutual NDA. This document is a working prototype and a proposal — not a contract. All figures are honest estimates, not guarantees. Phase 0 refund clause applies up to Day 30. ABN 83 988 690 362 · Sydney, Australia · © 2026 Artigellence.
+  </div>
+</footer>
+
+<script>
+(function(){
+  const tog=document.getElementById('theme-tog'),ico=document.getElementById('theme-ico'),lbl=document.getElementById('theme-lbl');
+  const root=document.documentElement;
+  const saved=localStorage.getItem('rnr-theme');
+  function paint(){const l=root.classList.contains('light');ico.textContent=l?'◐':'☀';lbl.textContent=l?'DARK':'LIGHT'}
+  if(saved==='light') root.classList.add('light');
+  else if(saved==='dark') root.classList.remove('light');
+  paint();
+  tog.addEventListener('click',()=>{root.classList.toggle('light');try{localStorage.setItem('rnr-theme',root.classList.contains('light')?'light':'dark')}catch(e){}paint()});
+})();
+// ROI Calculator
+(function(){
+  const rH=document.getElementById('r-hires'), vH=document.getElementById('v-hires');
+  const rR=document.getElementById('r-rev'),   vR=document.getElementById('v-rev');
+  const rM=document.getElementById('r-marg'),  vM=document.getElementById('v-marg');
+  const rMe=document.getElementById('r-merch'),vMe=document.getElementById('v-merch');
+  const oR=document.getElementById('o-rev'), oN=document.getElementById('o-net'), oMe=document.getElementById('o-mnet'), oT=document.getElementById('o-tot'), o6=document.getElementById('o-6m'), oC=document.getElementById('o-cost'), oRoi=document.getElementById('o-roi');
+  if(!rH) return;
+  const fmt=n=>'A$'+Math.round(n).toLocaleString();
+  function recalc(){
+    const h=+rH.value, r=+rR.value, m=+rM.value/100, me=+rMe.value;
+    vH.textContent=h; vR.textContent=fmt(r); vM.textContent=(+rM.value)+'%'; vMe.textContent=fmt(me);
+    const rev=h*r; const net=rev*m; const mnet=me*0.6; const tot=net+mnet; const six=tot*6; const cost=22500; const roi=six/cost;
+    oR.textContent=fmt(rev); oN.textContent=fmt(net); oMe.textContent=fmt(mnet); oT.textContent=fmt(tot); o6.textContent=fmt(six); oC.textContent=fmt(cost); oRoi.textContent=roi.toFixed(2)+'×';
+  }
+  [rH,rR,rM,rMe].forEach(el=>el.addEventListener('input',recalc));
+  recalc();
+})();
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>switchTab(t.dataset.tab));
+});
+document.querySelectorAll('[data-goto]').forEach(b=>{
+  b.addEventListener('click',()=>{switchTab(b.dataset.goto);window.scrollTo({top:0,behavior:'smooth'})});
+});
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===id));
+}
+</script>
+</body>
+</html>
